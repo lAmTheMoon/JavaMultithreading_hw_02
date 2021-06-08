@@ -1,28 +1,17 @@
 package hw_2_1;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class CarShop {
     private final long TIME_SELLING_CAR = 500L;
-    private final long TIME_CAR_PRODUCTION = 100L;
     private final int CAR_COUNT = 10;
-    private final List<Car> carsList = new ArrayList<>(CAR_COUNT);
-    private CarSeller carSeller = new CarSeller(this);
-
-    public CarShop() {
-    }
+    private final Queue<Car> carsList = new ConcurrentLinkedQueue<>();
+    private volatile CarSeller carSeller = new CarSeller(this);
 
     public void receiveCar() {
-        while (!Thread.currentThread().isInterrupted()) {
-            try {
-                Thread.sleep(TIME_CAR_PRODUCTION);
-                if (carSeller.getCarNumber() > CAR_COUNT) {
-                    break;
-                }
-                carSeller.receiveCar();
-            } catch (InterruptedException ignored) {
-            }
+        while (carSeller.getCarNumber() != CAR_COUNT) {
+            carSeller.receiveCar();
         }
     }
 
@@ -30,7 +19,7 @@ public class CarShop {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 Thread.sleep(TIME_SELLING_CAR);
-                if (carSeller.getCarNumber() > CAR_COUNT) {
+                if (carSeller.getCarNumber() == CAR_COUNT) {
                     break;
                 }
                 carSeller.sellCar();
@@ -39,7 +28,7 @@ public class CarShop {
         }
     }
 
-    public List<Car> getCarsList() {
+    public Queue<Car> getCarsList() {
         return carsList;
     }
 }
